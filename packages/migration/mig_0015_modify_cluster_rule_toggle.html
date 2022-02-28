@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<!--
+ Copyright 2022 Red Hat, Inc
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<html>
+<head>
+<title>mig_0015_modify_cluster_rule_toggle.go</title>
+<meta charset="utf-8"/>
+<style type="text/css">body {
+    background: rgb(225, 225, 225);
+    margin: 0px;
+    padding: 0px;
+}
+
+#docgo p {
+    margin-top: 0px;
+    margin-right: 0px;
+    margin-bottom: 15px;
+    margin-left: 0px;
+}
+
+#docgo div {
+    display: inline;
+}
+
+#docgo #background {
+    position: fixed;
+    top: 0; left: 525px; right: 0; bottom: 0;
+    background: rgb(47, 47, 47);
+    border-left: 1px solid #e5e5ee;
+    z-index: -1;
+}
+
+#docgo .keyword {
+    color: rgb(250, 200, 100);
+}
+
+#docgo .literal {
+    color: rgb(140, 190, 100);
+}
+
+#docgo .ident {
+    color: white;
+}
+
+#docgo .operator {
+    color: white;
+}
+
+#docgo .comment {
+}
+
+#docgo h1, h2, h3, h4, h5 {
+    text-align: left;
+    margin-top: 0px;
+    margin-right: 0px;
+    margin-bottom: 15px;
+    margin-left: 0px;
+}
+
+#docgo h1 {
+    margin-top: 40px;
+}
+
+#docgo .doc {
+    vertical-align: top;
+    font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;
+    font-size: 15px;
+    line-height: 22px;
+    color: black;
+    min-width: 450px;
+    max-width: 450px;
+    padding-top: 10px;
+    padding-right: 25px;
+    padding-bottom: 1px;
+    padding-left: 50px;
+    overflow-x: hidden;
+}
+
+#docgo .code {
+    min-width: 650px;
+    max-width: 650px;
+    padding-left: 25px;
+    padding-right: 15px;
+    border-left: 1px;
+    overflow-x: hidden;
+    vertical-align: top;
+}
+
+#docgo .code pre code  {
+    font-size: 12px;
+    line-height: 18px;
+    font-family: Menlo, Monaco, Consolas, "Lucida Console", monospace;
+    color: rgb(120, 120, 120);
+}
+</style>
+</head>
+<body>
+<div id="docgo">
+  <div id="background"></div>
+  <table>
+    <thead><tr><th class="doc"><h1>mig_0015_modify_cluster_rule_toggle.go</h1></th><th class="code"></th></tr></thead>
+    <tbody>
+      
+      <tr class="section">
+	<td class="doc"></td>
+	<td class="code"><pre><code><div class="comment">/*
+Copyright © 2021 Red Hat, Inc.
+
+Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/</div>
+
+<div class="keyword">package</div> <div class="ident">migration</div><div class="operator"></div>
+
+<div class="keyword">import</div> <div class="operator">(</div>
+	<div class="literal">&#34;database/sql&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;fmt&#34;</div><div class="operator"></div>
+
+	<div class="literal">&#34;github.com/RedHatInsights/insights-results-aggregator/types&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;github.com/rs/zerolog/log&#34;</div><div class="operator"></div>
+<div class="operator">)</div><div class="operator"></div>
+
+<div class="comment">/*
+	migration15 adds error_key and set as a new primary key
+	This make us available to disable rule results instead of whole rules
+	for rules with more than one possible error key as result
+*/</div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>mig0015ClusterRuleToggle is a helper for update the cluster<em>rule</em>toggle table</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">var</div> <div class="ident">mig0015ClusterRuleToggle</div> <div class="operator">=</div> <div class="ident">Migration</div><div class="operator">{</div>
+	<div class="ident">StepUp</div><div class="operator">:</div> <div class="keyword">func</div><div class="operator">(</div><div class="ident">tx</div> <div class="operator">*</div><div class="ident">sql</div><div class="operator">.</div><div class="ident">Tx</div><div class="operator">,</div> <div class="ident">driver</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">DBDriver</div><div class="operator">)</div> <div class="ident">error</div> <div class="operator">{</div>
+		<div class="keyword">var</div> <div class="ident">err</div> <div class="ident">error</div><div class="operator"></div>
+
+		<div class="keyword">if</div> <div class="ident">_</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">=</div> <div class="ident">tx</div><div class="operator">.</div><div class="ident">Exec</div><div class="operator">(</div><div class="literal">`
+			ALTER TABLE cluster_rule_toggle ADD error_key VARCHAR NOT NULL DEFAULT &#39;&#39;;
+		`</div><div class="operator">)</div><div class="operator">;</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+			<div class="keyword">return</div> <div class="ident">err</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+
+		<div class="keyword">if</div> <div class="ident">driver</div> <div class="operator">==</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">DBDriverPostgres</div> <div class="operator">{</div>
+			<div class="ident">_</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">=</div> <div class="ident">tx</div><div class="operator">.</div><div class="ident">Exec</div><div class="operator">(</div><div class="literal">`
+				ALTER TABLE cluster_rule_toggle DROP CONSTRAINT cluster_rule_toggle_pkey,
+					ADD CONSTRAINT cluster_rule_toggle_pkey PRIMARY KEY (cluster_id, rule_id, error_key);
+			`</div><div class="operator">)</div><div class="operator"></div>
+
+		<div class="operator">}</div> <div class="keyword">else</div> <div class="operator">{</div>
+			<div class="ident">err</div> <div class="operator">=</div> <div class="ident">mig0015ClusterRuleTogglePrimaryKeysSQLite</div><div class="operator">.</div><div class="ident">StepUp</div><div class="operator">(</div><div class="ident">tx</div><div class="operator">,</div> <div class="ident">driver</div><div class="operator">)</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+
+		<div class="keyword">return</div> <div class="ident">err</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator">,</div>
+	<div class="ident">StepDown</div><div class="operator">:</div> <div class="keyword">func</div><div class="operator">(</div><div class="ident">tx</div> <div class="operator">*</div><div class="ident">sql</div><div class="operator">.</div><div class="ident">Tx</div><div class="operator">,</div> <div class="ident">driver</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">DBDriver</div><div class="operator">)</div> <div class="ident">error</div> <div class="operator">{</div>
+		<div class="keyword">if</div> <div class="ident">driver</div> <div class="operator">==</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">DBDriverPostgres</div> <div class="operator">{</div>
+			<div class="ident">_</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">tx</div><div class="operator">.</div><div class="ident">Exec</div><div class="operator">(</div><div class="literal">`
+				ALTER TABLE cluster_rule_toggle DROP CONSTRAINT cluster_rule_toggle_pkey,
+					ADD CONSTRAINT cluster_rule_toggle_pkey PRIMARY KEY (cluster_id, rule_id);
+				ALTER TABLE cluster_rule_toggle DROP COLUMN error_key;
+			`</div><div class="operator">)</div><div class="operator"></div>
+			<div class="keyword">return</div> <div class="ident">err</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+
+		<div class="keyword">return</div> <div class="ident">mig0015ClusterRuleTogglePrimaryKeysSQLite</div><div class="operator">.</div><div class="ident">StepDown</div><div class="operator">(</div><div class="ident">tx</div><div class="operator">,</div> <div class="ident">driver</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator">,</div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>mig0015ClusterRuleTogglePrimaryKeysSQLite is a helper to update PKs on cluster<em>rule</em>toggle table in SQLite</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">var</div> <div class="ident">mig0015ClusterRuleTogglePrimaryKeysSQLite</div> <div class="operator">=</div> <div class="ident">NewUpdateTableMigration</div><div class="operator">(</div>
+	<div class="ident">clusterRuleToggleTable</div><div class="operator">,</div>
+	<div class="literal">`
+		CREATE TABLE cluster_rule_toggle (
+			cluster_id VARCHAR NOT NULL,
+			rule_id VARCHAR NOT NULL,
+			user_id VARCHAR NULL,
+			disabled SMALLINT NOT NULL,
+			disabled_at TIMESTAMP NULL,
+			enabled_at TIMESTAMP NULL,
+			updated_at TIMESTAMP NOT NULL,
+
+			CHECK (disabled &gt;= 0 AND disabled &lt;= 1),
+			PRIMARY KEY(cluster_id, rule_id)
+		)
+	`</div><div class="operator">,</div>
+	<div class="operator">[</div><div class="operator">]</div><div class="ident">string</div><div class="operator">{</div><div class="literal">&#34;cluster_id&#34;</div><div class="operator">,</div> <div class="literal">&#34;rule_id&#34;</div><div class="operator">,</div> <div class="literal">&#34;user_id&#34;</div><div class="operator">,</div> <div class="literal">&#34;disabled&#34;</div><div class="operator">,</div> <div class="literal">&#34;disabled_at&#34;</div><div class="operator">,</div> <div class="literal">&#34;enabled_at&#34;</div><div class="operator">,</div> <div class="literal">&#34;updated_at&#34;</div><div class="operator">}</div><div class="operator">,</div>
+	<div class="literal">`
+		CREATE TABLE cluster_rule_toggle (
+			cluster_id VARCHAR NOT NULL,
+			rule_id VARCHAR NOT NULL,
+			user_id VARCHAR NULL,
+			disabled SMALLINT NOT NULL,
+			disabled_at TIMESTAMP NULL,
+			enabled_at TIMESTAMP NULL,
+			updated_at TIMESTAMP NOT NULL,
+			error_key VARCHAR NOT NULL,
+
+			CHECK (disabled &gt;= 0 AND disabled &lt;= 1),
+			PRIMARY KEY(cluster_id, rule_id, error_key)
+		)
+	`</div><div class="operator">,</div>
+<div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>mig0015ClusterRuleUserFeedback is a helper for update the cluster<em>rule</em>user_feedback table</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">var</div> <div class="ident">mig0015ClusterRuleUserFeedback</div> <div class="operator">=</div> <div class="ident">Migration</div><div class="operator">{</div>
+	<div class="ident">StepUp</div><div class="operator">:</div> <div class="keyword">func</div><div class="operator">(</div><div class="ident">tx</div> <div class="operator">*</div><div class="ident">sql</div><div class="operator">.</div><div class="ident">Tx</div><div class="operator">,</div> <div class="ident">driver</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">DBDriver</div><div class="operator">)</div> <div class="ident">error</div> <div class="operator">{</div>
+		<div class="keyword">var</div> <div class="ident">err</div> <div class="ident">error</div><div class="operator"></div>
+		<div class="keyword">if</div> <div class="ident">_</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">=</div> <div class="ident">tx</div><div class="operator">.</div><div class="ident">Exec</div><div class="operator">(</div><div class="literal">`
+			ALTER TABLE cluster_rule_user_feedback ADD error_key VARCHAR NOT NULL DEFAULT &#39;&#39;;
+		`</div><div class="operator">)</div><div class="operator">;</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+			<div class="keyword">return</div> <div class="ident">err</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+
+		<div class="keyword">if</div> <div class="ident">driver</div> <div class="operator">==</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">DBDriverPostgres</div> <div class="operator">{</div>
+			<div class="ident">_</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">=</div> <div class="ident">tx</div><div class="operator">.</div><div class="ident">Exec</div><div class="operator">(</div><div class="literal">`
+				ALTER TABLE cluster_rule_user_feedback DROP CONSTRAINT cluster_rule_user_feedback_pkey1,
+					ADD CONSTRAINT cluster_rule_user_feedback_pkey PRIMARY KEY (cluster_id, rule_id, user_id, error_key);
+			`</div><div class="operator">)</div><div class="operator"></div>
+
+		<div class="operator">}</div> <div class="keyword">else</div> <div class="operator">{</div>
+			<div class="ident">err</div> <div class="operator">=</div> <div class="ident">mig0015ClusterRuleUserFeedbackPrimaryKeysSQLite</div><div class="operator">.</div><div class="ident">StepUp</div><div class="operator">(</div><div class="ident">tx</div><div class="operator">,</div> <div class="ident">driver</div><div class="operator">)</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+
+		<div class="keyword">return</div> <div class="ident">err</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator">,</div>
+	<div class="ident">StepDown</div><div class="operator">:</div> <div class="keyword">func</div><div class="operator">(</div><div class="ident">tx</div> <div class="operator">*</div><div class="ident">sql</div><div class="operator">.</div><div class="ident">Tx</div><div class="operator">,</div> <div class="ident">driver</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">DBDriver</div><div class="operator">)</div> <div class="ident">error</div> <div class="operator">{</div>
+		<div class="keyword">if</div> <div class="ident">driver</div> <div class="operator">==</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">DBDriverPostgres</div> <div class="operator">{</div>
+			<div class="ident">_</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">tx</div><div class="operator">.</div><div class="ident">Exec</div><div class="operator">(</div><div class="literal">`
+				ALTER TABLE cluster_rule_user_feedback DROP CONSTRAINT cluster_rule_user_feedback_pkey,
+					ADD CONSTRAINT cluster_rule_user_feedback_pkey1 PRIMARY KEY (cluster_id, rule_id, user_id);
+				ALTER TABLE cluster_rule_user_feedback DROP COLUMN error_key;
+			`</div><div class="operator">)</div><div class="operator"></div>
+			<div class="keyword">return</div> <div class="ident">err</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+
+		<div class="keyword">return</div> <div class="ident">mig0015ClusterRuleUserFeedbackPrimaryKeysSQLite</div><div class="operator">.</div><div class="ident">StepDown</div><div class="operator">(</div><div class="ident">tx</div><div class="operator">,</div> <div class="ident">driver</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator">,</div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>mig0015ClusterRuleUserFeedbackPrimaryKeysSQLite is a helper to update PKs on cluster<em>rule</em>user_feedback table in SQLite</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">var</div> <div class="ident">mig0015ClusterRuleUserFeedbackPrimaryKeysSQLite</div> <div class="operator">=</div> <div class="ident">NewUpdateTableMigration</div><div class="operator">(</div>
+	<div class="ident">clusterRuleUserFeedbackTable</div><div class="operator">,</div>
+	<div class="literal">`
+	CREATE TABLE cluster_rule_user_feedback (
+		cluster_id VARCHAR NOT NULL,
+		rule_id VARCHAR NOT NULL,
+		user_id VARCHAR NOT NULL,
+		message VARCHAR NOT NULL,
+		user_vote SMALLINT NOT NULL,
+		added_at TIMESTAMP NOT NULL,
+		updated_at TIMESTAMP NOT NULL,
+
+		PRIMARY KEY(cluster_id, rule_id, user_id),
+		FOREIGN KEY (cluster_id) REFERENCES report(cluster) ON DELETE CASCADE
+	)
+	`</div><div class="operator">,</div>
+	<div class="operator">[</div><div class="operator">]</div><div class="ident">string</div><div class="operator">{</div><div class="literal">&#34;cluster_id&#34;</div><div class="operator">,</div> <div class="literal">&#34;rule_id&#34;</div><div class="operator">,</div> <div class="literal">&#34;user_id&#34;</div><div class="operator">,</div> <div class="literal">&#34;message&#34;</div><div class="operator">,</div> <div class="literal">&#34;user_vote&#34;</div><div class="operator">,</div> <div class="literal">&#34;added_at&#34;</div><div class="operator">,</div> <div class="literal">&#34;updated_at&#34;</div><div class="operator">}</div><div class="operator">,</div>
+	<div class="literal">`
+	CREATE TABLE cluster_rule_user_feedback (
+		cluster_id VARCHAR NOT NULL,
+		rule_id VARCHAR NOT NULL,
+		user_id VARCHAR NOT NULL,
+		message VARCHAR NOT NULL,
+		user_vote SMALLINT NOT NULL,
+		added_at TIMESTAMP NOT NULL,
+		updated_at TIMESTAMP NOT NULL,
+		error_key VARCHAR NOT NULL,
+		
+		PRIMARY KEY(cluster_id, rule_id, user_id, error_key),
+		FOREIGN KEY (cluster_id) REFERENCES report(cluster) ON DELETE CASCADE
+	)
+	`</div><div class="operator">,</div>
+<div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>mig0015ClusterUserRuleDisableFeedback is a helper for update the cluster<em>user</em>rule<em>disable</em>feedback</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">var</div> <div class="ident">mig0015ClusterUserRuleDisableFeedback</div> <div class="operator">=</div> <div class="ident">Migration</div><div class="operator">{</div>
+	<div class="ident">StepUp</div><div class="operator">:</div> <div class="keyword">func</div><div class="operator">(</div><div class="ident">tx</div> <div class="operator">*</div><div class="ident">sql</div><div class="operator">.</div><div class="ident">Tx</div><div class="operator">,</div> <div class="ident">driver</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">DBDriver</div><div class="operator">)</div> <div class="ident">error</div> <div class="operator">{</div>
+		<div class="keyword">var</div> <div class="ident">err</div> <div class="ident">error</div><div class="operator"></div>
+
+		<div class="keyword">if</div> <div class="ident">_</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">tx</div><div class="operator">.</div><div class="ident">Exec</div><div class="operator">(</div><div class="literal">`
+			ALTER TABLE cluster_user_rule_disable_feedback ADD error_key VARCHAR NOT NULL DEFAULT &#39;&#39;;
+		`</div><div class="operator">)</div><div class="operator">;</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+			<div class="keyword">return</div> <div class="ident">err</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+
+		<div class="keyword">if</div> <div class="ident">driver</div> <div class="operator">==</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">DBDriverPostgres</div> <div class="operator">{</div>
+			<div class="ident">_</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">=</div> <div class="ident">tx</div><div class="operator">.</div><div class="ident">Exec</div><div class="operator">(</div><div class="literal">`
+				ALTER TABLE cluster_user_rule_disable_feedback DROP CONSTRAINT cluster_user_rule_disable_feedback_pkey,
+					ADD CONSTRAINT cluster_user_rule_disable_feedback_pkey PRIMARY KEY (cluster_id, user_id, rule_id, error_key);
+			`</div><div class="operator">)</div><div class="operator"></div>
+
+		<div class="operator">}</div> <div class="keyword">else</div> <div class="operator">{</div>
+			<div class="ident">err</div> <div class="operator">=</div> <div class="ident">mig0015ClusterUserRuleDisableFeedbackPrimaryKeysSQLite</div><div class="operator">.</div><div class="ident">StepUp</div><div class="operator">(</div><div class="ident">tx</div><div class="operator">,</div> <div class="ident">driver</div><div class="operator">)</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+
+		<div class="keyword">return</div> <div class="ident">err</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator">,</div>
+	<div class="ident">StepDown</div><div class="operator">:</div> <div class="keyword">func</div><div class="operator">(</div><div class="ident">tx</div> <div class="operator">*</div><div class="ident">sql</div><div class="operator">.</div><div class="ident">Tx</div><div class="operator">,</div> <div class="ident">driver</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">DBDriver</div><div class="operator">)</div> <div class="ident">error</div> <div class="operator">{</div>
+		<div class="keyword">if</div> <div class="ident">driver</div> <div class="operator">==</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">DBDriverPostgres</div> <div class="operator">{</div>
+			<div class="ident">_</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">tx</div><div class="operator">.</div><div class="ident">Exec</div><div class="operator">(</div><div class="literal">`
+				ALTER TABLE cluster_user_rule_disable_feedback DROP CONSTRAINT cluster_user_rule_disable_feedback_pkey,
+					ADD CONSTRAINT cluster_user_rule_disable_feedback_pkey PRIMARY KEY (cluster_id, user_id, rule_id);
+				ALTER TABLE cluster_user_rule_disable_feedback DROP COLUMN error_key;
+			`</div><div class="operator">)</div><div class="operator"></div>
+			<div class="keyword">return</div> <div class="ident">err</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+
+		<div class="keyword">return</div> <div class="ident">mig0015ClusterUserRuleDisableFeedbackPrimaryKeysSQLite</div><div class="operator">.</div><div class="ident">StepDown</div><div class="operator">(</div><div class="ident">tx</div><div class="operator">,</div> <div class="ident">driver</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator">,</div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>mig0015ClusterUserRuleDisableFeedbackPrimaryKeysSQLite is a helper to update PKs on cluster<em>user</em>rule<em>disable</em>feedback table in SQLite</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">var</div> <div class="ident">mig0015ClusterUserRuleDisableFeedbackPrimaryKeysSQLite</div> <div class="operator">=</div> <div class="ident">NewUpdateTableMigration</div><div class="operator">(</div>
+	<div class="ident">clusterUserRuleDisableFeedbackTable</div><div class="operator">,</div>
+	<div class="literal">`
+	CREATE TABLE cluster_user_rule_disable_feedback (
+		cluster_id VARCHAR NOT NULL,
+		user_id VARCHAR NOT NULL,
+		rule_id VARCHAR NOT NULL,
+		message VARCHAR NOT NULL,
+		added_at TIMESTAMP NOT NULL,
+		updated_at TIMESTAMP NOT NULL,
+			
+		PRIMARY KEY(cluster_id, user_id, rule_id)
+	)
+	`</div><div class="operator">,</div>
+	<div class="operator">[</div><div class="operator">]</div><div class="ident">string</div><div class="operator">{</div><div class="literal">&#34;cluster_id&#34;</div><div class="operator">,</div> <div class="literal">&#34;user_id&#34;</div><div class="operator">,</div> <div class="literal">&#34;rule_id&#34;</div><div class="operator">,</div> <div class="literal">&#34;message&#34;</div><div class="operator">,</div> <div class="literal">&#34;added_at&#34;</div><div class="operator">,</div> <div class="literal">&#34;updated_at&#34;</div><div class="operator">}</div><div class="operator">,</div>
+	<div class="literal">`
+	CREATE TABLE cluster_user_rule_disable_feedback (
+		cluster_id VARCHAR NOT NULL,
+		user_id VARCHAR NOT NULL,
+		rule_id VARCHAR NOT NULL,
+		message VARCHAR NOT NULL,
+		added_at TIMESTAMP NOT NULL,
+		updated_at TIMESTAMP NOT NULL,
+		error_key VARCHAR NOT NULL,
+		
+		PRIMARY KEY(cluster_id, user_id, rule_id, error_key)		
+	)
+	`</div><div class="operator">,</div>
+<div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>migrateClusterRoleToggleData is a helper to update the current data with default values
+It takes the only possible value for error_key on the rules that only has one possible error key</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">migrateClusterRoleToggleData</div><div class="operator">(</div><div class="ident">tx</div> <div class="operator">*</div><div class="ident">sql</div><div class="operator">.</div><div class="ident">Tx</div><div class="operator">)</div> <div class="ident">error</div> <div class="operator">{</div>
+	<div class="ident">updateClusterRuleToggleQuery</div> <div class="operator">:=</div> <div class="literal">`
+	UPDATE cluster_rule_toggle SET error_key=$1 WHERE rule_id LIKE $2
+	`</div><div class="operator"></div>
+	<div class="ident">updateClusterRuleUserFeedbackQuery</div> <div class="operator">:=</div> <div class="literal">`
+	UPDATE cluster_rule_user_feedback SET error_key=$1 WHERE rule_id LIKE $2
+	`</div><div class="operator"></div>
+
+	<div class="ident">updateClusterUserRuleDisableFeedbackQuery</div> <div class="operator">:=</div> <div class="literal">`
+	UPDATE cluster_user_rule_disable_feedback SET error_key=$1 WHERE rule_id LIKE $2
+	`</div><div class="operator"></div>
+
+	<div class="keyword">for</div> <div class="ident">ruleID</div><div class="operator">,</div> <div class="ident">errorKey</div> <div class="operator">:=</div> <div class="keyword">range</div> <div class="ident">defaultErrorKeysPerRuleID</div> <div class="operator">{</div>
+		<div class="ident">ruleIDWildcard</div> <div class="operator">:=</div> <div class="ident">fmt</div><div class="operator">.</div><div class="ident">Sprintf</div><div class="operator">(</div><div class="literal">&#34;%s%%&#34;</div><div class="operator">,</div> <div class="ident">ruleID</div><div class="operator">)</div><div class="operator"></div>
+
+		<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;rule_id&#34;</div><div class="operator">,</div> <div class="ident">ruleIDWildcard</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;errorKey&#34;</div><div class="operator">,</div> <div class="ident">errorKey</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Updating DB data&#34;</div><div class="operator">)</div><div class="operator"></div>
+
+		<div class="ident">err</div> <div class="operator">:=</div> <div class="ident">updateTableData</div><div class="operator">(</div><div class="ident">tx</div><div class="operator">,</div> <div class="literal">&#34;cluster_rule_toggle&#34;</div><div class="operator">,</div> <div class="ident">updateClusterRuleToggleQuery</div><div class="operator">,</div> <div class="ident">errorKey</div><div class="operator">,</div> <div class="ident">ruleIDWildcard</div><div class="operator">)</div><div class="operator"></div>
+
+		<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+			<div class="keyword">return</div> <div class="ident">err</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+
+		<div class="ident">err</div> <div class="operator">=</div> <div class="ident">updateTableData</div><div class="operator">(</div><div class="ident">tx</div><div class="operator">,</div> <div class="literal">&#34;cluster_rule_user_feedback&#34;</div><div class="operator">,</div> <div class="ident">updateClusterRuleUserFeedbackQuery</div><div class="operator">,</div> <div class="ident">errorKey</div><div class="operator">,</div> <div class="ident">ruleIDWildcard</div><div class="operator">)</div><div class="operator"></div>
+		<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+			<div class="keyword">return</div> <div class="ident">err</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+
+		<div class="ident">err</div> <div class="operator">=</div> <div class="ident">updateTableData</div><div class="operator">(</div><div class="ident">tx</div><div class="operator">,</div> <div class="literal">&#34;cluster_user_rule_disable_feedback&#34;</div><div class="operator">,</div> <div class="ident">updateClusterUserRuleDisableFeedbackQuery</div><div class="operator">,</div> <div class="ident">errorKey</div><div class="operator">,</div> <div class="ident">ruleIDWildcard</div><div class="operator">)</div><div class="operator"></div>
+		<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+			<div class="keyword">return</div> <div class="ident">err</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+
+	<div class="keyword">return</div> <div class="ident">nil</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>mig0015ModifyClusterRuleTables migrates the tables related to user toggle and feedback with error_key</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">var</div> <div class="ident">mig0015ModifyFeedbackTables</div> <div class="operator">=</div> <div class="ident">Migration</div><div class="operator">{</div>
+	<div class="ident">StepUp</div><div class="operator">:</div> <div class="keyword">func</div><div class="operator">(</div><div class="ident">tx</div> <div class="operator">*</div><div class="ident">sql</div><div class="operator">.</div><div class="ident">Tx</div><div class="operator">,</div> <div class="ident">driver</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">DBDriver</div><div class="operator">)</div> <div class="ident">error</div> <div class="operator">{</div>
+		<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">mig0015ClusterRuleToggle</div><div class="operator">.</div><div class="ident">StepUp</div><div class="operator">(</div><div class="ident">tx</div><div class="operator">,</div> <div class="ident">driver</div><div class="operator">)</div><div class="operator">;</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+			<div class="keyword">return</div> <div class="ident">err</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+
+		<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">mig0015ClusterRuleUserFeedback</div><div class="operator">.</div><div class="ident">StepUp</div><div class="operator">(</div><div class="ident">tx</div><div class="operator">,</div> <div class="ident">driver</div><div class="operator">)</div><div class="operator">;</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+			<div class="keyword">return</div> <div class="ident">err</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+
+		<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">mig0015ClusterUserRuleDisableFeedback</div><div class="operator">.</div><div class="ident">StepUp</div><div class="operator">(</div><div class="ident">tx</div><div class="operator">,</div> <div class="ident">driver</div><div class="operator">)</div><div class="operator">;</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+			<div class="keyword">return</div> <div class="ident">err</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+
+		<div class="keyword">return</div> <div class="ident">migrateClusterRoleToggleData</div><div class="operator">(</div><div class="ident">tx</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator">,</div>
+
+	<div class="ident">StepDown</div><div class="operator">:</div> <div class="keyword">func</div><div class="operator">(</div><div class="ident">tx</div> <div class="operator">*</div><div class="ident">sql</div><div class="operator">.</div><div class="ident">Tx</div><div class="operator">,</div> <div class="ident">driver</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">DBDriver</div><div class="operator">)</div> <div class="ident">error</div> <div class="operator">{</div>
+		<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">mig0015ClusterRuleToggle</div><div class="operator">.</div><div class="ident">StepDown</div><div class="operator">(</div><div class="ident">tx</div><div class="operator">,</div> <div class="ident">driver</div><div class="operator">)</div><div class="operator">;</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+			<div class="keyword">return</div> <div class="ident">err</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+
+		<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">mig0015ClusterRuleUserFeedback</div><div class="operator">.</div><div class="ident">StepDown</div><div class="operator">(</div><div class="ident">tx</div><div class="operator">,</div> <div class="ident">driver</div><div class="operator">)</div><div class="operator">;</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+			<div class="keyword">return</div> <div class="ident">err</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+
+		<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">mig0015ClusterUserRuleDisableFeedback</div><div class="operator">.</div><div class="ident">StepDown</div><div class="operator">(</div><div class="ident">tx</div><div class="operator">,</div> <div class="ident">driver</div><div class="operator">)</div><div class="operator">;</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+			<div class="keyword">return</div> <div class="ident">err</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+
+		<div class="keyword">return</div> <div class="ident">nil</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator">,</div>
+<div class="operator">}</div><div class="operator"></div>
+
+<div class="keyword">var</div> <div class="ident">defaultErrorKeysPerRuleID</div> <div class="keyword">map</div><div class="operator">[</div><div class="ident">string</div><div class="operator">]</div><div class="ident">string</div> <div class="operator">=</div> <div class="keyword">map</div><div class="operator">[</div><div class="ident">string</div><div class="operator">]</div><div class="ident">string</div><div class="operator">{</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.bug_rules.bug_1765280&#34;</div><div class="operator">:</div> <div class="literal">&#34;BUGZILLA_BUG_1765280&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.bug_rules.bug_1766907&#34;</div><div class="operator">:</div> <div class="literal">&#34;BUGZILLA_BUG_1766907&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.bug_rules.bug_1798049&#34;</div><div class="operator">:</div> <div class="literal">&#34;BUGZILLA_BUG_1798049&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.bug_rules.bug_1821905&#34;</div><div class="operator">:</div> <div class="literal">&#34;BUGZILLA_BUG_1821905&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.bug_rules.bug_1832986&#34;</div><div class="operator">:</div> <div class="literal">&#34;BUGZILLA_BUG_1832986&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.bug_rules.bug_1893386&#34;</div><div class="operator">:</div> <div class="literal">&#34;BUGZILLA_BUG_1893386&#34;</div><div class="operator">,</div>
+
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.ccxdev_auxiliary_rule&#34;</div><div class="operator">:</div>                      <div class="literal">&#34;CCXDEV_E2E_TEST_RULE&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.check_sap_sdi_observer_pods&#34;</div><div class="operator">:</div>                <div class="literal">&#34;SAP_SDI_OBSERVER_POD_ERROR&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.check_sdi_preload_kernel_modules&#34;</div><div class="operator">:</div>           <div class="literal">&#34;SDI_PRELOAD_KERNEL_MODULES_ERROR&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.cluster_wide_proxy_auth_check&#34;</div><div class="operator">:</div>              <div class="literal">&#34;AUTH_OPERATOR_PROXY_ERROR&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.cmo_container_run_as_non_root&#34;</div><div class="operator">:</div>              <div class="literal">&#34;CMO_CONTAINER_RUN_AS_NON_ROOT&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.container_max_root_partition_size&#34;</div><div class="operator">:</div>          <div class="literal">&#34;CONTAINER_ROOT_PARTITION_SIZE&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.control_plane_replicas&#34;</div><div class="operator">:</div>                     <div class="literal">&#34;CONTROL_PLANE_NODE_REPLICAS&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.empty_prometheus_db_volume&#34;</div><div class="operator">:</div>                 <div class="literal">&#34;PROMETHEUS_DB_VOLUME_IS_EMPTY&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.image_registry_multiple_storage_types&#34;</div><div class="operator">:</div>      <div class="literal">&#34;IMAGE_REGISTRY_MULTIPLE_STORAGE_TYPES&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.lib_bucket_provisioner_check&#34;</div><div class="operator">:</div>               <div class="literal">&#34;LIB_BUCKET_PROVISIONER_INSTALL_PLANS_ISSUE&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.machineconfig_stuck_by_node_taints&#34;</div><div class="operator">:</div>         <div class="literal">&#34;NODE_HAS_TAINTS_APPLIED&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.master_defined_as_machinesets&#34;</div><div class="operator">:</div>              <div class="literal">&#34;MASTER_DEFINED_AS_MACHINESETS&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.node_installer_degraded&#34;</div><div class="operator">:</div>                    <div class="literal">&#34;NODE_INSTALLER_DEGRADED&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.nodes_container_runtime_version_check&#34;</div><div class="operator">:</div>      <div class="literal">&#34;NODES_CONTAINER_RUNTIME_VERSION&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.nodes_kubelet_version_check&#34;</div><div class="operator">:</div>                <div class="literal">&#34;NODE_KUBELET_VERSION&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.nodes_requirements_check&#34;</div><div class="operator">:</div>                   <div class="literal">&#34;NODES_MINIMUM_REQUIREMENTS_NOT_MET&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.openshift_sdn_egress_ip_in_no_hostsubnet&#34;</div><div class="operator">:</div>   <div class="literal">&#34;OPENSHIFT_SDN_EGRESS_IP_IN_NO_HOSTSUBNET&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.operator_unmanaged&#34;</div><div class="operator">:</div>                         <div class="literal">&#34;OPERATOR_UNMANAGED&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.prometheus_backed_by_pvc&#34;</div><div class="operator">:</div>                   <div class="literal">&#34;PROMETHEUS_BACKED_BY_PVC&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.prometheus_rule_evaluation_fail&#34;</div><div class="operator">:</div>            <div class="literal">&#34;PROMETHEUS_RULE_EVALUATION_FAIL&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.same_egress_ip_in_multiple_netnamespaces&#34;</div><div class="operator">:</div>   <div class="literal">&#34;SAME_EGRESS_IP_IN_MULTIPLE_NETNAMESPACES&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.samples_op_failed_image_import_check&#34;</div><div class="operator">:</div>       <div class="literal">&#34;SAMPLES_FAILED_IMAGE_IMPORT_ERR&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.sap_data_intelligence_permissions&#34;</div><div class="operator">:</div>          <div class="literal">&#34;SAP_DATA_INTELLIGENCE_PERMISSIONS&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.subnets_migration_failure_massive_egressip&#34;</div><div class="operator">:</div> <div class="literal">&#34;SUBNETS_MIGRATION_FAILURE_MASSIVE_EGRESSIP&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.tls_handshake_fails_in_azure&#34;</div><div class="operator">:</div>               <div class="literal">&#34;TLS_HANDSHAKE_FAILS_IN_AZURE&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.unsupported_cni_plugin&#34;</div><div class="operator">:</div>                     <div class="literal">&#34;UNSUPPORTED_CNI_PLUGIN&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.rules.vsphere_upi_machine_is_in_phase&#34;</div><div class="operator">:</div>            <div class="literal">&#34;VSPHERE_UPI_MACHINE_WITH_NO_RUNNING_PHASE&#34;</div><div class="operator">,</div>
+
+	<div class="literal">&#34;ccx_rules_ocp.external.security.CVE_2020_8555_kubernetes&#34;</div><div class="operator">:</div> <div class="literal">&#34;CVE_2020_8555_KUBERNETES&#34;</div><div class="operator">,</div>
+	<div class="literal">&#34;ccx_rules_ocp.external.security.CVE_2021_30465_runc&#34;</div><div class="operator">:</div>      <div class="literal">&#34;CVE_2021_30465_RUNC_VULN&#34;</div><div class="operator">,</div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Several ERROR<em>KEY
+&quot;ccx</em>rules<em>ocp.external.rules.image</em>registry<em>storage&quot;
+&quot;ccx</em>rules<em>ocp.external.rules.ocp</em>version<em>end</em>of<em>life</em>eus&quot;
+&quot;ccx<em>rules</em>ocp.external.rules.ocp<em>version</em>end<em>of</em>life&quot;
+&quot;ccx<em>rules</em>ocp.external.rules.openshift<em>sdn</em>egress<em>ip</em>in<em>multiple</em>hostsubnets&quot;
+&quot;ccx<em>rules</em>ocp.external.rules.upgrade<em>to</em>ocp47<em>fails</em>on_vsphere&quot;</p>
+</td>
+	<td class="code"><pre><code><div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

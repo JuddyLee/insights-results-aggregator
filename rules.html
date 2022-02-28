@@ -1,0 +1,226 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+
+  
+    <title>Rules - Insights Results Aggregator</title>
+
+    
+  
+
+  <link rel="shortcut icon" href="/insights-results-aggregator/favicon.ico" type="image/x-icon">
+
+  <link rel="stylesheet" href="/insights-results-aggregator/assets/css/just-the-docs-default.css">
+
+  
+
+  
+  <script type="text/javascript" src="/insights-results-aggregator/assets/js/just-the-docs.js"></script>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Rules | Insights Results Aggregator</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="Rules" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Aggregator service for Openshist insights results" />
+<meta property="og:description" content="Aggregator service for Openshist insights results" />
+<link rel="canonical" href="https://redhatinsights.github.io/insights-results-aggregator/rules.html" />
+<meta property="og:url" content="https://redhatinsights.github.io/insights-results-aggregator/rules.html" />
+<meta property="og:site_name" content="Insights Results Aggregator" />
+<script type="application/ld+json">
+{"description":"Aggregator service for Openshist insights results","url":"https://redhatinsights.github.io/insights-results-aggregator/rules.html","@type":"WebPage","headline":"Rules","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+  
+
+</head>
+
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+    <symbol id="svg-link" viewBox="0 0 24 24">
+      <title>Link</title>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-link">
+        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+      </svg>
+    </symbol>
+    <symbol id="svg-search" viewBox="0 0 24 24">
+      <title>Search</title>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search">
+        <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+    </symbol>
+    <symbol id="svg-menu" viewBox="0 0 24 24">
+      <title>Menu</title>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu">
+        <line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </symbol>
+    <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+      <title>Expand</title>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </symbol>
+    <symbol id="svg-doc" viewBox="0 0 24 24">
+      <title>Document</title>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file">
+        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline>
+      </svg>
+    </symbol>
+  </svg>
+
+  <div class="side-bar">
+    <div class="site-header">
+      <a href="https://redhatinsights.github.io/insights-results-aggregator/" class="site-title lh-tight">
+  Insights Results Aggregator
+
+</a>
+      <a href="#" id="menu-button" class="site-button">
+        <svg viewBox="0 0 24 24" class="icon"><use xlink:href="#svg-menu"></use></svg>
+      </a>
+    </div>
+    <nav role="navigation" aria-label="Main" id="site-nav" class="site-nav">
+      
+        <ul class="nav-list"><li class="nav-list-item"><a href="https://redhatinsights.github.io/insights-results-aggregator/architecture.html" class="nav-list-link">Architecture</a></li><li class="nav-list-item"><a href="https://redhatinsights.github.io/insights-results-aggregator/configuration.html" class="nav-list-link">Configuration</a></li><li class="nav-list-item"><a href="https://redhatinsights.github.io/insights-results-aggregator/database.html" class="nav-list-link">Database</a></li><li class="nav-list-item"><a href="https://redhatinsights.github.io/insights-results-aggregator/db_structure.html" class="nav-list-link">DB structure</a></li><li class="nav-list-item"><a href="https://redhatinsights.github.io/insights-results-aggregator/rest_api.html" class="nav-list-link">REST API</a></li><li class="nav-list-item"><a href="https://redhatinsights.github.io/insights-results-aggregator/authentication.html" class="nav-list-link">Authentication</a></li><li class="nav-list-item"><a href="https://redhatinsights.github.io/insights-results-aggregator/prometheus.html" class="nav-list-link">Prometheus API</a></li><li class="nav-list-item"><a href="https://redhatinsights.github.io/insights-results-aggregator/pprof.html" class="nav-list-link">pprof</a></li><li class="nav-list-item active"><a href="https://redhatinsights.github.io/insights-results-aggregator/rules.html" class="nav-list-link active">Rules</a></li><li class="nav-list-item"><a href="https://redhatinsights.github.io/insights-results-aggregator/testing.html" class="nav-list-link">Testing</a></li><li class="nav-list-item"><a href="https://redhatinsights.github.io/insights-results-aggregator/ci.html" class="nav-list-link">CI</a></li><li class="nav-list-item"><a href="https://redhatinsights.github.io/insights-results-aggregator/utilities.html" class="nav-list-link">Utilities</a></li><li class="nav-list-item"><a href="https://redhatinsights.github.io/insights-results-aggregator/local_setup.html" class="nav-list-link">Local setup</a></li><li class="nav-list-item"><a href="https://redhatinsights.github.io/insights-results-aggregator/documentation_for_developers.html" class="nav-list-link">Documentation for developers</a></li><li class="nav-list-item"><a href="https://redhatinsights.github.io/insights-results-aggregator/source_files.html" class="nav-list-link">Documentation for source files from this repository</a></li><li class="nav-list-item"><a href="https://redhatinsights.github.io/insights-results-aggregator/references.html" class="nav-list-link">References</a></li><li class="nav-list-item"><a href="https://redhatinsights.github.io/insights-results-aggregator/" class="nav-list-link">Description</a></li></ul>
+
+      
+    </nav>
+    <footer class="site-footer">
+      This site uses <a href="https://github.com/pmarsceill/just-the-docs">Just the Docs</a>, a documentation theme for Jekyll.
+    </footer>
+  </div>
+  <div class="main" id="top">
+    <div id="main-header" class="main-header">
+      
+      
+      
+        <nav aria-label="Auxiliary" class="aux-nav">
+          <ul class="aux-nav-list">
+            
+              <li class="aux-nav-list-item">
+                <a href="https://github.com/RedHatInsights/insights-results-aggregator" class="site-button"
+                  
+                >
+                  Github repository
+                </a>
+              </li>
+            
+          </ul>
+        </nav>
+      
+    </div>
+    <div id="main-content-wrap" class="main-content-wrap">
+      
+        
+      
+      <div id="main-content" class="main-content" role="main">
+        
+          <h1 id="rules">
+        
+        
+          <a href="#rules" class="anchor-heading" aria-labelledby="rules"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Rules
+        
+        
+      </h1>
+    
+
+<p>The user has the ability to disable a rule/health check recommendation that they’re not interested
+in to stop it from showing in OCM. The user also has the ability to re-enable the rule, in case they
+later become interested in it, or in the case of an accidental disable, for example.</p>
+
+<p>This is made possible by using these two endpoints:
+<code class="language-plaintext highlighter-rouge">clusters/{cluster}/rules/{rule_id}/disable</code>
+<code class="language-plaintext highlighter-rouge">clusters/{cluster}/rules/{rule_id}/enable</code></p>
+      <h2 id="tutorial-rule">
+        
+        
+          <a href="#tutorial-rule" class="anchor-heading" aria-labelledby="tutorial-rule"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Tutorial rule
+        
+        
+      </h2>
+    
+
+<p>Directory <code class="language-plaintext highlighter-rouge">rules/tutorial/</code> contains tutorial rule that is ‘hit’ by any cluster.</p>
+      <h2 id="rules-content">
+        
+        
+          <a href="#rules-content" class="anchor-heading" aria-labelledby="rules-content"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Rules content
+        
+        
+      </h2>
+    
+
+<p>The generated cluster reports from Insights results contain three lists of rules that were either
+<strong>skipped</strong> (because of missing requirements, etc.), <strong>passed</strong> (the rule got executed but no issue
+was found), or <strong>hit</strong> (the rule got executed and found the issue it was looking for) by the
+cluster, where each rule is represented as a dictionary containing identifying information about the
+rule itself.</p>
+
+<p>The <strong>hit</strong> rules are the rules that the customer is interested in and therefore the information
+about them (their <strong>content</strong>) needs to be displayed in OCM. The content for the rules is present in
+another repository, alongside the actual rule implementations, which is primarily maintained by the
+support-facing team.
+For that reason, the <code class="language-plaintext highlighter-rouge">insights-results-aggregator</code> is setup in a way, that the content we’re
+interested in is copied to the Docker image from the repository during image build and we have a
+push webhook on master branch set up in that repository, signalling our app to be rebuilt.</p>
+
+<p>This content is then processed upon application start-up, correctly parsed by the package <code class="language-plaintext highlighter-rouge">content</code>
+and saved into the database (see DB structure).</p>
+
+<p>When a request for a cluster report comes from OCM, the report is parsed (TODO: parse reports only
+once when consuming them) and content for all the hit rules is returned.</p>
+      <h3 id="local-environment-with-rules-content">
+        
+        
+          <a href="#local-environment-with-rules-content" class="anchor-heading" aria-labelledby="local-environment-with-rules-content"><svg viewBox="0 0 16 16" aria-hidden="true"><use xlink:href="#svg-link"></use></svg></a> Local environment with rules content
+        
+        
+      </h3>
+    
+
+<p>The rules content parser is configured by default to expect the content in a root directory
+<code class="language-plaintext highlighter-rouge">/rules-content</code>.
+This can be changed either by an environment variable <code class="language-plaintext highlighter-rouge">INSIGHTS_RESULTS_AGGREGATOR__CONTENT__PATH</code>
+or by modifying the config file entry:</p>
+
+<div class="language-toml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nn">[content]</span>
+<span class="py">path</span> <span class="p">=</span> <span class="s">"/rules-content"</span>
+</code></pre></div></div>
+
+<p>To get the latest rules content locally, you can <code class="language-plaintext highlighter-rouge">make rules_content</code>, which just runs the script
+<code class="language-plaintext highlighter-rouge">update_rules_content.sh</code> mimicking the Dockerfile behavior (NOTE: you need to be in RH VPN to be
+able to access that repository, but it is not private). The script copies the content into a
+<code class="language-plaintext highlighter-rouge">.gitignored</code> folder <code class="language-plaintext highlighter-rouge">rules-content</code>, so all that’s necessary is to change the expected path.</p>
+
+        
+
+        
+
+        
+        
+          <hr>
+          <footer>
+            
+
+            <p class="text-small text-grey-dk-100 mb-0">Copyright &copy; 2020 Red Hat, Inc.</a></p>
+
+            
+          </footer>
+        
+
+      </div>
+    </div>
+
+    
+  </div>
+</body>
+</html>
+
